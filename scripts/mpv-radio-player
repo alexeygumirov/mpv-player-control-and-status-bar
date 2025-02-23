@@ -1,0 +1,53 @@
+#!/bin/sh
+
+# MIT License
+#
+# Copyright (c) 2025 Alexey Gumirov
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+MPV_SOCKET="/tmp/mpv_socket"
+MPV_CONTROL_SCRIPT="$(dirname "$0")/mpv-control"
+RADIO_LIST_FILE="$(dirname "$0")/mpv-radio-url-list"
+ROFI_FONT="JetBrainsMono Nerd Font 14"
+
+notification(){
+    notify-send "Now Playing:" "${1} ☕️🎶"
+}
+
+player_launch(){
+    notification "${2}"
+    mpv --vid=no --quiet --input-ipc-server="${MPV_SOCKET}" "${1}" &
+}
+
+main() {
+    length=$(wc -l "${RADIO_LIST_FILE}" | cut -d' ' -f1)
+    choice=$(cut -d',' -f1 "${RADIO_LIST_FILE}" | sed 's/,/. /' | rofi -dmenu -font "${ROFI_FONT}" -location 2 -l "${length}" -p 'Select radio' -width 20)
+    if [ -z "$choice" ]; then
+        exit 0
+    fi
+    radio_url=$(grep "^${choice}" "${RADIO_LIST_FILE}" | cut -d',' -f2)
+    "${MPV_CONTROL_SCRIPT}" -quit
+    if pgrep -f "mpv --vid=no"; then
+        pkill -f "mpv --vid=no" && sleep 1
+    fi
+    player_launch "${radio_url}" "${choice}"
+}
+
+main

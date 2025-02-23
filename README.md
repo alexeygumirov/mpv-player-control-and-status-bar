@@ -78,3 +78,15 @@ Bindings explained:
     - `r`: Play Internet radio stations. (call `mpv-radio-player` script)
     - `u`: Play URL. (call `mpv-url-player` script)
 
+## Installation
+
+1. Clone the repository and copy scripts to your preferred location. Make sure that scripts are executable.
+2. Edit the  `mpv-radio-url-list` file by adding your favorite radio stations.
+3. Configure key bindings in your environment.
+4. Enjoy!
+
+## License
+
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+
+Copyright (c) 2025 Alexey Gumirov
