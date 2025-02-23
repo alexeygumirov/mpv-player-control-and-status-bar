@@ -2,7 +2,7 @@
 
 Scrips for MPV player to be used with TWM and any status bar to play music, videos or Internet radio
 
-![Demo](./demo/script_demo.mp4)
+[![Watch demo](https://github.com/alexeygumirov/mpv-player-control-and-status-bar/raw/refs/heads/main/demo/script_demo.png)](https://github.com/alexeygumirov/mpv-player-control-and-status-bar/raw/refs/heads/main/demo/script_demo.mp4)
 
 ## Features
 
