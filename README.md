@@ -78,6 +78,30 @@ Bindings explained:
     - `r`: Play Internet radio stations. (call `mpv-radio-player` script)
     - `u`: Play URL. (call `mpv-url-player` script)
 
+## Status bar example (for Xmobar)
+
+I am using Xmobar status bar. Here is part of my configuration file with MPV player status info.
+In my config I set up update interval to 3 seconds.
+
+```haskell
+Config {
+       font = "JetBrainsMono Nerd Font Regular 12"
+       , additionalFonts = [ "Font Awesome 6 Free"
+                           , "JetBrainsMono Nerd Font Bold 12"
+                           , "JetBrainsMono Nerd Font 10"
+                           ]
+       -- ...
+       , commands = [ Run UnsafeStdinReader
+                    -- ...
+                    , Run Com "/home/alexgum/.scripts/sh/mpv-control" ["-status"] "player_status" 30
+                    ]
+       , sepChar = "%"
+       , alignSep = "}{"
+       , template = " ... %UnsafeStdinReader% }{<fn=3>%player_status%</fn> ... "
+       }
+
+```
+
 ## Installation
 
 1. Clone the repository and copy scripts to your preferred location. Make sure that scripts are executable.
