@@ -28,7 +28,7 @@ Scrips for MPV player to be used with TWM and any status bar to play music, vide
 
 - [`mpv-control`](./scripts/mpv-control): Main script to send commands to MPV player and to print status info.
 - [`mpv-url-player`](./scripts/mpv-url-player): Script to play given URL. Primarily from the YouTube. But can be used for any URL from the source.
-    - Script uses `yt-dlp` to get title of the played media stream.
+    - Script uses `yt-dlp` to get title of the played media stream. And uses `--cookies-from-browser` option to get cookies from the browser. More details on the [yt-dlp documentation page](https://github.com/yt-dlp/yt-dlp?tab=readme-ov-file#filesystem-options)
 - [`mpv-folder-player`](./scripts/mpv-folder-player): Script to play all music or video files from the given folder, or to play individual file (if file size is over 40MB).
 - [`mpv-radio-player`](./scripts/mpv-radio-player): Script to play Internet radio stations. List of stations is stored in the [`mpv-radio-url-list`](./scripts/mpv-radio-url-list) file. File format is just comma separated values: `station name, URL`. Station line can be commented out with `#` symbol if you don't want to show them in the list.
     ```plaintext
