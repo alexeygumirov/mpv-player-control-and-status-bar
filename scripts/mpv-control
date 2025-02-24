@@ -38,10 +38,19 @@ is_stream(){
 is_pause(){
     if [ -S "${MPV_SOCKET}" ]; then
         PAUSED="$(printf "%s\n" '{ "command": ["get_property", "pause"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
+        VIDEO_STATUS="$(printf "%s\n" '{ "command": ["get_property", "video"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
         if [ "$PAUSED" = "true" ]; then
-            printf "%s" ""
+            if [ "$VIDEO_STATUS" = "false" ]; then
+                printf "%s" ""
+            else
+                printf "%s" "  "
+            fi
         else
-            printf "%s" ""
+            if [ "$VIDEO_STATUS" = "false" ]; then
+                printf "%s" ""
+            else
+                printf "%s" " "
+            fi
         fi
     fi
 }

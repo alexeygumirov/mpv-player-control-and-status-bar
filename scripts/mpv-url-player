@@ -35,7 +35,6 @@ notification(){
 
 player_launch(){
     notification "${2}"
-    printf "%s\n" "${2}" > "${MPV_STATUS_FILE}"
     mpv --quiet --input-ipc-server="${MPV_SOCKET}" "${1}" &
 }
 
@@ -44,6 +43,7 @@ main() {
     if [ -z "$url" ]; then
         exit 0
     fi
+    url=$(printf "%s" "$url" | cut -d'&' -f1)
     title=$(yt-dlp --cookies-from-browser "$BROWSER_PROFILE" --get-title "$url")
     "${MPV_CONTROL_SCRIPT}" -quit
     player_launch "${url}" "${title}"
