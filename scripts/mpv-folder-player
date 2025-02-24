@@ -67,9 +67,9 @@ $(find "$MEDIA_PATH" -maxdepth 2 -type d -iname "music*" 2>/dev/null)"
     esac
     if [ "$chose_mode" = "Video" ]; then
         list_files=$(fd -t f -S +40M . "$FOLDER"; fd -t d . "$FOLDER") # List only files larger than 40M. You can change the size of the files to be displayed
-        chosen=$(echo "$list_files" | sed "s#${FOLDER}/##; s/\/\$//" | sort | rofi_launch "Select")
+        chosen=$(printf "%s\n" "$list_files" | sed "s#${FOLDER}/##; s/\/\$//" | sort | rofi_launch "Select")
         if [ -n "$chosen" ]; then
-            echo "${FOLDER}/${chosen}"
+            printf "%s\n" "${FOLDER}/${chosen}"
             "${MPV_CONTROL_SCRIPT}" -quit
 	    notification "${chosen}"
             mpv --quiet --display-tags="Artist,Album,Title" --input-ipc-server="${MPV_SOCKET}" "${FOLDER}/${chosen}" &
@@ -78,7 +78,7 @@ $(find "$MEDIA_PATH" -maxdepth 2 -type d -iname "music*" 2>/dev/null)"
         fi
     else
         list_files=$(fd -t f -S +40M . "$FOLDER"; fd -t d . "$FOLDER") # List only files larger than 40M. You can change the size of the files to be displayed
-        chosen=$(echo "$list_files" | sed "s#${FOLDER}/##; s/\/\$//" | sort | rofi_launch "Select")
+        chosen=$(printf "%s\n" "$list_files" | sed "s#${FOLDER}/##; s/\/\$//" | sort | rofi_launch "Select")
         if [ -n "$chosen" ]; then
             "${MPV_CONTROL_SCRIPT}" -quit
             if pgrep -f "mpv --vid=no"; then

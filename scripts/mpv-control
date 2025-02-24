@@ -26,7 +26,7 @@ MPV_SOCKET="/tmp/mpv_socket"
 
 is_stream(){
     if [ -S "${MPV_SOCKET}" ]; then
-        PATH_STRING="$(echo '{ "command": ["get_property", "path"] }' | socat - "${MPV_SOCKET}" | jq -r '.data' | cut -c1-6)"
+        PATH_STRING="$(printf "%s\n" '{ "command": ["get_property", "path"] }' | socat - "${MPV_SOCKET}" | jq -r '.data' | cut -c1-6)"
         if [ "$PATH_STRING" = 'http:/' ] || [ "$PATH_STRING" = 'https:' ]; then
             printf "%s" "YES"
         else
@@ -37,7 +37,7 @@ is_stream(){
 
 is_pause(){
     if [ -S "${MPV_SOCKET}" ]; then
-        PAUSED="$(echo '{ "command": ["get_property", "pause"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
+        PAUSED="$(printf "%s\n" '{ "command": ["get_property", "pause"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
         if [ "$PAUSED" = "true" ]; then
             printf "%s" ""
         else
@@ -48,7 +48,7 @@ is_pause(){
 
 is_playlist_loop(){
     if [ -S "${MPV_SOCKET}" ]; then
-        PL_LOOP_STATUS="$(echo '{ "command": ["get_property", "loop-playlist"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
+        PL_LOOP_STATUS="$(printf "%s\n" '{ "command": ["get_property", "loop-playlist"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
         if [ "$PL_LOOP_STATUS" = "inf" ]; then
             printf "%s" "  "
         else
@@ -59,7 +59,7 @@ is_playlist_loop(){
 
 is_file_loop(){
     if [ -S "${MPV_SOCKET}" ]; then
-        FILE_LOOP_STATUS="$(echo '{ "command": ["get_property", "loop-file"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
+        FILE_LOOP_STATUS="$(printf "%s\n" '{ "command": ["get_property", "loop-file"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
         if [ "$FILE_LOOP_STATUS" = "inf" ]; then
             printf "%s" "  "
         else
@@ -79,7 +79,7 @@ status_line(){
             exit 0
         fi
     fi
-    METADATA="$(echo '{ "command": ["get_property", "metadata"] }' | socat - "${MPV_SOCKET}" | jq '.data')"
+    METADATA="$(printf "%s\n" '{ "command": ["get_property", "metadata"] }' | socat - "${MPV_SOCKET}" | jq '.data')"
     IS_STREAM="$(is_stream)"
     if [ "$IS_STREAM" = "YES" ]; then
         RADIO_NAME="$(printf "%s" "$METADATA" | jq -r '.["icy-name"]')"
@@ -100,14 +100,14 @@ status_line(){
     if [ ! "$SONG_ALBUM" = "null" ]; then
         STATUS_STRING=" $(is_playlist_loop) ${SONG_ALBUM} "
     fi
-    TOTAL_TRACKS="$(echo '{ "command": ["get_property", "playlist-count"] }' | socat - "${MPV_SOCKET}" | jq '.data')"
+    TOTAL_TRACKS="$(printf "%s\n" '{ "command": ["get_property", "playlist-count"] }' | socat - "${MPV_SOCKET}" | jq '.data')"
     if [ "$TOTAL_TRACKS" -gt 1 ]; then
-        CURRENT_TRACK="$(echo '{ "command": ["get_property", "playlist-pos"] }' | socat - "${MPV_SOCKET}" | jq '.data')"
+        CURRENT_TRACK="$(printf "%s\n" '{ "command": ["get_property", "playlist-pos"] }' | socat - "${MPV_SOCKET}" | jq '.data')"
         STATUS_STRING="${STATUS_STRING}[$((CURRENT_TRACK + 1))/${TOTAL_TRACKS}] $(is_pause)$(is_file_loop) "
     else
         STATUS_STRING="${STATUS_STRING}$(is_pause)$(is_file_loop) "
     fi
-    PERCENTAGE="$(echo '{ "command": ["get_property", "percent-pos"] }' | socat - "${MPV_SOCKET}" | jq '.data' | cut -d'.' -f1)"
+    PERCENTAGE="$(printf "%s\n" '{ "command": ["get_property", "percent-pos"] }' | socat - "${MPV_SOCKET}" | jq '.data' | cut -d'.' -f1)"
     if [ ! "$PERCENTAGE" = "null" ]; then
         STATUS_STRING="${STATUS_STRING}[${PERCENTAGE}󰏰] "
     fi
@@ -117,7 +117,7 @@ status_line(){
     fi
     SONG_TITLE="$(printf "%s" "$METADATA" | jq -r '.title')"
     if [ "$SONG_TITLE" = "null" ]; then
-        SONG_TITLE="$(echo '{ "command": ["get_property", "media-title"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
+        SONG_TITLE="$(printf "%s\n" '{ "command": ["get_property", "media-title"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
     fi
     if [ "$(printf "%s" "$SONG_TITLE" | wc -c)" -gt 30 ]; then
         SONG_TITLE="$(printf "%s" "$SONG_TITLE" | cut -c 1-30)‥"
@@ -132,27 +132,27 @@ status_line(){
 case "$1" in
     "-next")
         if [ -S "${MPV_SOCKET}" ]; then
-            echo '{ "command" : ["playlist-next"] }' | socat - "${MPV_SOCKET}"
+            printf "%s\n" '{ "command" : ["playlist-next"] }' | socat - "${MPV_SOCKET}"
         fi
         ;;
     "-prev")
         if [ -S "${MPV_SOCKET}" ]; then
-            echo '{ "command" : ["playlist-prev"] }' | socat - "${MPV_SOCKET}"
+            printf "%s\n" '{ "command" : ["playlist-prev"] }' | socat - "${MPV_SOCKET}"
         fi
         ;;
     "-playpause")
         if [ -S "${MPV_SOCKET}" ]; then
-            echo '{ "command" : ["keypress", "p"] }' | socat - "${MPV_SOCKET}"
+            printf "%s\n" '{ "command" : ["keypress", "p"] }' | socat - "${MPV_SOCKET}"
         fi
         ;;
     "-shuffle")
         if [ -S "${MPV_SOCKET}" ]; then
-            echo '{ "command" : ["playlist-shuffle"] }' | socat - "${MPV_SOCKET}"
+            printf "%s\n" '{ "command" : ["playlist-shuffle"] }' | socat - "${MPV_SOCKET}"
         fi
         ;;
     "-quit")
         if [ -S "${MPV_SOCKET}" ]; then
-            echo '{ "command" : ["quit"] }' | socat - "${MPV_SOCKET}"
+            printf "%s\n" '{ "command" : ["quit"] }' | socat - "${MPV_SOCKET}"
             rm -f "${MPV_SOCKET}"
         fi
         sleep 1
@@ -160,34 +160,34 @@ case "$1" in
         ;;
     "-seek-forward")
         if [ -S "${MPV_SOCKET}" ]; then
-            echo '{ "command": ["seek", "10"] }' | socat - "${MPV_SOCKET}"
+            printf "%s\n" '{ "command": ["seek", "10"] }' | socat - "${MPV_SOCKET}"
         fi
         sleep 1
         ;;
     "-seek-backward")
         if [ -S "${MPV_SOCKET}" ]; then
-            echo '{ "command": ["seek", "-10"] }' | socat - "${MPV_SOCKET}"
+            printf "%s\n" '{ "command": ["seek", "-10"] }' | socat - "${MPV_SOCKET}"
         fi
         sleep 1
         ;;
     "-loop-file-toggle")
         if [ -S "${MPV_SOCKET}" ]; then
-            F_LOOP_STATUS="$(echo '{ "command": ["get_property", "loop-file"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
+            F_LOOP_STATUS="$(printf "%s\n" '{ "command": ["get_property", "loop-file"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
             if [ "$F_LOOP_STATUS" = "inf" ]; then
-                echo '{ "command": ["set_property", "loop-file", false] }' | socat - "${MPV_SOCKET}"
+                printf "%s\n" '{ "command": ["set_property", "loop-file", false] }' | socat - "${MPV_SOCKET}"
             else
-                echo '{ "command": ["set_property", "loop-file", true] }' | socat - "${MPV_SOCKET}"
+                printf "%s\n" '{ "command": ["set_property", "loop-file", true] }' | socat - "${MPV_SOCKET}"
             fi
         fi
         sleep 1
         ;;
     "-loop-playlist-toggle")
         if [ -S "${MPV_SOCKET}" ]; then
-            PL_LOOP_STATUS="$(echo '{ "command": ["get_property", "loop-playlist"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
+            PL_LOOP_STATUS="$(printf "%s\n" '{ "command": ["get_property", "loop-playlist"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
             if [ "$PL_LOOP_STATUS" = "inf" ]; then
-                echo '{ "command": ["set_property", "loop-playlist", false] }' | socat - "${MPV_SOCKET}"
+                printf "%s\n" '{ "command": ["set_property", "loop-playlist", false] }' | socat - "${MPV_SOCKET}"
             else
-                echo '{ "command": ["set_property", "loop-playlist", true] }' | socat - "${MPV_SOCKET}"
+                printf "%s\n" '{ "command": ["set_property", "loop-playlist", true] }' | socat - "${MPV_SOCKET}"
             fi
         fi
         sleep 1

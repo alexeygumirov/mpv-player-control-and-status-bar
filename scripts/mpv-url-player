@@ -35,7 +35,7 @@ notification(){
 
 player_launch(){
     notification "${2}"
-    echo "${2}" > "${MPV_STATUS_FILE}"
+    printf "%s\n" "${2}" > "${MPV_STATUS_FILE}"
     mpv --quiet --input-ipc-server="${MPV_SOCKET}" "${1}" &
 }
 
