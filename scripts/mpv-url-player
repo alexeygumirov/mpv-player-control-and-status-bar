@@ -22,6 +22,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# For yt-dlp to work correctly with cookies and being able to pull the title from the YouTube video
+# you need to pass you browser profile directory to the script (for Chrome/Chromium or Firefox)
+# More details on the yt-dlp documentation page: https://github.com/yt-dlp/yt-dlp?tab=readme-ov-file#filesystem-options
 BROWSER_PROFILE="firefox:abc123def.default-release"
 MPV_SOCKET="/tmp/mpv_socket"
 MPV_CONTROL_SCRIPT="$(dirname "$0")/mpv-control"
