@@ -24,14 +24,25 @@
 
 MPV_SOCKET="/tmp/mpv_socket"
 
-is_stream(){
+clean_quotes(){
+    printf "%s\n" "${1}" | sed 's#^"##; s#"$##'
+}
+
+is_stream_yt(){
     if [ -S "${MPV_SOCKET}" ]; then
-        PATH_STRING="$(printf "%s\n" '{ "command": ["get_property", "path"] }' | socat - "${MPV_SOCKET}" | jq -r '.data' | cut -c1-6)"
-        if [ "$PATH_STRING" = 'http:/' ] || [ "$PATH_STRING" = 'https:' ]; then
-            printf "%s" "YES"
-        else
-            printf "%s" "NO"
+        FULL_PATH="$(printf "%s\n" '{ "command": ["get_property", "path"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
+        if printf "%s\n" "$FULL_PATH" | grep -q 'youtu.be\|youtube'; then
+            if printf "%s\n" "$FULL_PATH" | grep -q '^http://\|^https://'; then
+                printf "%s" "YOUTUBE"
+                exit 0
+            fi
         fi
+        if printf "%s\n" "$FULL_PATH" | grep -q '^http://\|^https://'; then
+            printf "%s" "YES"
+            exit 0
+        fi
+        printf "%s" "NO"
+        exit 0
     fi
 }
 
@@ -89,50 +100,54 @@ status_line(){
         fi
     fi
     METADATA="$(printf "%s\n" '{ "command": ["get_property", "metadata"] }' | socat - "${MPV_SOCKET}" | jq '.data')"
-    IS_STREAM="$(is_stream)"
-    if [ "$IS_STREAM" = "YES" ]; then
+    if [ "$(is_stream_yt)" = "YOUTUBE" ]; then
+        UPLOADER_NAME="$(printf "%s" "$METADATA" | jq -r '.["uploader"]')"
+        VID_TITLE="$(printf "%s\n" '{ "command": ["get_property", "media-title"] }' | socat - "${MPV_SOCKET}" | jq '.data')"
+        if [ ! "$UPLOADER_NAME" = "null" ]; then
+            printf " %s %s %s" "$UPLOADER_NAME" "$(is_pause)" "$(clean_quotes "$VID_TITLE" | cut -c1-30)"
+            exit 0
+        else
+            printf " %s %s" "$(is_pause)" "$(clean_quotes "$VID_TITLE" )"
+            exit 0
+        fi
+    fi
+    if [ "$(is_stream_yt)" = "YES" ]; then
         RADIO_NAME="$(printf "%s" "$METADATA" | jq -r '.["icy-name"]')"
         RADIO_TITLE="$(printf "%s" "$METADATA" | jq -r '.["icy-title"]' | sed "s#${RADIO_NAME} - ##; s#${RADIO_NAME} | ##; s# - ${RADIO_NAME} - ##")"
         if [ ! "$RADIO_NAME" = "null" ]; then
-            if [ "$(printf "%s" "$RADIO_TITLE" | wc -c)" -gt 40 ]; then
-                RADIO_TITLE="$(printf "%s" "$RADIO_TITLE" | cut -c 1-40)..."
-            fi
-            printf "󰐻%s %s %s%s %s" "$(is_playlist_loop)" "$RADIO_NAME" "$(is_pause)" "$(is_file_loop)" "$RADIO_TITLE"
+            printf "󰐻 %s %s%s %s" "$RADIO_NAME" "$(is_pause)" "$(is_file_loop)" "$(clean_quotes "$RADIO_TITLE" | cut -c1-30)"
+            exit 0
+        else
+            printf "󰐻 %s%s %s" "$(is_pause)" "$(is_file_loop)" "$(clean_quotes "$RADIO_TITLE" | cut -c1-30)"
             exit 0
         fi
     fi
     STATUS_STRING=""
-    SONG_ALBUM="$(printf "%s" "$METADATA" | jq -r '.album')"
-    if [ "$(printf "%s" "$SONG_ALBUM" | wc -c)" -gt 20 ]; then
-        SONG_ALBUM="$(printf "%s" "$SONG_ALBUM" | cut -c 1-20)‥"
-    fi
+    SONG_ALBUM="$(printf "%s\n" "${METADATA}" | jq '.album')"
     if [ ! "$SONG_ALBUM" = "null" ]; then
-        STATUS_STRING=" $(is_playlist_loop) ${SONG_ALBUM} "
+        STATUS_STRING=" $(is_playlist_loop) $(clean_quotes "${SONG_ALBUM}" | cut -c1-20) "
     fi
-    TOTAL_TRACKS="$(printf "%s\n" '{ "command": ["get_property", "playlist-count"] }' | socat - "${MPV_SOCKET}" | jq '.data')"
+    TOTAL_TRACKS="$(printf "%s\n" '{ "command": ["get_property", "playlist-count"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
     if [ "$TOTAL_TRACKS" -gt 1 ]; then
-        CURRENT_TRACK="$(printf "%s\n" '{ "command": ["get_property", "playlist-pos"] }' | socat - "${MPV_SOCKET}" | jq '.data')"
+        CURRENT_TRACK="$(printf "%s\n" '{ "command": ["get_property", "playlist-pos"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
         STATUS_STRING="${STATUS_STRING}[$((CURRENT_TRACK + 1))/${TOTAL_TRACKS}] $(is_pause)$(is_file_loop) "
     else
         STATUS_STRING="${STATUS_STRING}$(is_pause)$(is_file_loop) "
     fi
-    PERCENTAGE="$(printf "%s\n" '{ "command": ["get_property", "percent-pos"] }' | socat - "${MPV_SOCKET}" | jq '.data' | cut -d'.' -f1)"
+    PERCENTAGE="$(printf "%s\n" '{ "command": ["get_property", "percent-pos"] }' | socat - "${MPV_SOCKET}" | jq -r '.data' | cut -d'.' -f1)"
     if [ ! "$PERCENTAGE" = "null" ]; then
         STATUS_STRING="${STATUS_STRING}[${PERCENTAGE}󰏰] "
     fi
-    SONG_ARTIST="$(printf "%s" "$METADATA" | jq -r '.artist')"
+    SONG_ARTIST="$(printf "%s\n" "${METADATA}" | jq '.artist')"
     if [ ! "$SONG_ARTIST" = "null" ]; then
-        STATUS_STRING="${STATUS_STRING}${SONG_ARTIST} - "
+        STATUS_STRING="${STATUS_STRING}$(clean_quotes "${SONG_ARTIST}") - "
     fi
-    SONG_TITLE="$(printf "%s" "$METADATA" | jq -r '.title')"
+    SONG_TITLE="$(printf "%s\n" "$METADATA" | jq '.title')"
     if [ "$SONG_TITLE" = "null" ]; then
-        SONG_TITLE="$(printf "%s\n" '{ "command": ["get_property", "media-title"] }' | socat - "${MPV_SOCKET}" | jq -r '.data')"
-    fi
-    if [ "$(printf "%s" "$SONG_TITLE" | wc -c)" -gt 30 ]; then
-        SONG_TITLE="$(printf "%s" "$SONG_TITLE" | cut -c 1-30)‥"
+        SONG_TITLE="$(printf "%s\n" '{ "command": ["get_property", "media-title"] }' | socat - "${MPV_SOCKET}" | jq '.data')"
     fi
     if [ ! "$SONG_TITLE" = "null" ]; then
-        STATUS_STRING="${STATUS_STRING}${SONG_TITLE}"
+        STATUS_STRING="${STATUS_STRING}$(clean_quotes "${SONG_TITLE}" | cut -c1-30)"
     fi
     printf "%s" "$STATUS_STRING"
     exit 0
@@ -165,7 +180,6 @@ case "$1" in
             rm -f "${MPV_SOCKET}"
         fi
         sleep 1
-        printf "" > "${MPV_STATUS_FILE}"
         ;;
     "-seek-forward")
         if [ -S "${MPV_SOCKET}" ]; then

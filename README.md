@@ -59,6 +59,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
        , ((0, xK_f), spawn "$HOME/.scripts/sh/mpv-folder-player")
        , ((0, xK_r), spawn "$HOME/.scripts/sh/mpv-radio-player")
        , ((0, xK_u), spawn "$HOME/.scripts/sh/mpv-url-player")
+       , ((shiftMask, xK_u), spawn "$HOME/.scripts/sh/mpv-url-player -audio")
        ])
     ]
 ```
@@ -77,6 +78,7 @@ Bindings explained:
     - `f`: Play music or video files from the folder. (call `mpv-folder-player` script)
     - `r`: Play Internet radio stations. (call `mpv-radio-player` script)
     - `u`: Play URL. (call `mpv-url-player` script)
+    - `Shift + u`: Play URL, but only audio. (call `mpv-url-player` script with `-audio` option)
 
 ## Status bar example (for Xmobar)
 

@@ -33,11 +33,6 @@ notification(){
     notify-send "Playing YT:" "${1} ☕️🎶"
 }
 
-player_launch(){
-    notification "${2}"
-    mpv --quiet --input-ipc-server="${MPV_SOCKET}" "${1}" &
-}
-
 main() {
     url=$(rofi -dmenu -font "$FONT" -yoffset 24 -no-fixed-num-lines -p "url" -theme Paper)
     if [ -z "$url" ]; then
@@ -46,7 +41,15 @@ main() {
     url=$(printf "%s" "$url" | cut -d'&' -f1)
     title=$(yt-dlp --cookies-from-browser "$BROWSER_PROFILE" --get-title "$url")
     "${MPV_CONTROL_SCRIPT}" -quit
-    player_launch "${url}" "${title}"
+    notification "${title}"
+    case "${1}" in
+        "-audio")
+            mpv --quiet --input-ipc-server="${MPV_SOCKET}" --no-video "${url}" &
+            ;;
+        *)
+            mpv --quiet --input-ipc-server="${MPV_SOCKET}" "${url}" &
+            ;;
+    esac
 }
 
-main
+main "${1}"
