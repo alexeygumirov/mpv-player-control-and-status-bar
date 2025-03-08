@@ -2,7 +2,7 @@
 
 Scrips for MPV player to be used with TWM and any status bar to play music, videos or Internet radio
 
-https://github.com/user-attachments/assets/8f8cbdad-f1f2-41aa-9dfd-c38dbebde1f9
+https://github.com/user-attachments/assets/2a34301d-6788-4023-9d84-1d61ce3c1c7c
 
 ## Features
 
