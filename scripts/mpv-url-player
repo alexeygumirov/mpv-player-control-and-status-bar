@@ -27,6 +27,7 @@
 # More details on the yt-dlp documentation page: https://github.com/yt-dlp/yt-dlp?tab=readme-ov-file#filesystem-options
 BROWSER_PROFILE="firefox:abc123def.default-release"
 MPV_SOCKET="/tmp/mpv_socket"
+MPV_SOCKET_IN_CONFIG="false"
 MPV_CONTROL_SCRIPT="$(dirname "$0")/mpv-control"
 
 notification(){
@@ -44,10 +45,18 @@ main() {
     notification "${title}"
     case "${1}" in
         "-audio")
-            mpv --quiet --input-ipc-server="${MPV_SOCKET}" --no-video "${url}" &
+            if [ "$MPV_SOCKET_IN_CONFIG" = "true" ]; then
+                mpv --quiet --no-video "${url}" &
+            else
+                mpv --quiet --input-ipc-server="${MPV_SOCKET}" --no-video "${url}" &
+            fi
             ;;
         *)
-            mpv --quiet --input-ipc-server="${MPV_SOCKET}" "${url}" &
+            if [ "$MPV_SOCKET_IN_CONFIG" = "true" ]; then
+                mpv --quiet "${url}" &
+            else
+                mpv --quiet --input-ipc-server="${MPV_SOCKET}" "${url}" &
+            fi
             ;;
     esac
 }

@@ -23,6 +23,7 @@
 # SOFTWARE.
 
 MPV_SOCKET="/tmp/mpv_socket"
+MPV_SOCKET_IN_CONFIG="false"
 
 clean_quotes(){
     printf "%s\n" "${1}" | sed 's#^"##; s#"$##'
@@ -89,14 +90,22 @@ is_file_loop(){
 }
 
 status_line(){
-    if [ ! -S "${MPV_SOCKET}" ]; then
+    if [ ! -e "${MPV_SOCKET}" ]; then
         printf "%s" ""
         exit 0
     else
-        if [ "$(pgrep -cfa "${MPV_SOCKET}")" -eq 0 ]; then
-            printf "%s" ""
-            rm -f "${MPV_SOCKET}"
-            exit 0
+        if [ "$MPV_SOCKET_IN_CONFIG" = "true" ]; then
+            if ! pgrep -fa mpv | grep -vq mpv-control; then
+                printf "%s" ""
+                rm -f "${MPV_SOCKET}"
+                exit 0
+            fi
+        else
+            if ! pgrep -fa "${MPV_SOCKET}" >/dev/null; then
+                printf "%s" ""
+                rm -f "${MPV_SOCKET}"
+                exit 0
+            fi
         fi
     fi
     METADATA="$(printf "%s\n" '{ "command": ["get_property", "metadata"] }' | socat - "${MPV_SOCKET}" | jq '.data')"

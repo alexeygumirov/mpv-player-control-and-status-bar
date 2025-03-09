@@ -24,6 +24,7 @@
 
 MPV_SOCKET="/tmp/mpv_socket"
 MPV_CONTROL_SCRIPT="$(dirname "$0")/mpv-control"
+MPV_SOCKET_IN_CONFIG="false"
 RADIO_LIST_FILE="$(dirname "$0")/mpv-radio-url-list"
 ROFI_FONT="JetBrainsMono Nerd Font 14"
 
@@ -33,7 +34,11 @@ notification(){
 
 player_launch(){
     notification "${2}"
-    mpv --vid=no --quiet --input-ipc-server="${MPV_SOCKET}" "${1}" &
+    if [ "$MPV_SOCKET_IN_CONFIG" = "true" ]; then
+        mpv --vid=no --quiet "${1}" &
+    else
+        mpv --vid=no --quiet --input-ipc-server="${MPV_SOCKET}" "${1}" &
+    fi
 }
 
 main() {

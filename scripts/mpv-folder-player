@@ -27,8 +27,10 @@
 # By default, the script will search for folders with the name "Music" or "Videos" in the HOME directory and in the mounted media
 # In the mounted media the depth of the search is limited to 2 levels
 
+MINIMAL_FILE_SIZE="40M"
 MPV_SOCKET="/tmp/mpv_socket"
 MPV_CONTROL_SCRIPT="$(dirname "$0")/mpv-control"
+MPV_SOCKET_IN_CONFIG="false"
 ROFI_FONT="JetBrainsMono Nerd Font 14"
 
 rofi_launch(){
@@ -66,26 +68,34 @@ $(find "$MEDIA_PATH" -maxdepth 2 -type d -iname "music*" 2>/dev/null)"
             ;;
     esac
     if [ "$chose_mode" = "Video" ]; then
-        list_files=$(fd -t f -S +40M . "$FOLDER"; fd -t d . "$FOLDER") # List only files larger than 40M. You can change the size of the files to be displayed
+        list_files=$(fd -t f -S +"${MINIMAL_FILE_SIZE}" . "$FOLDER"; fd -t d . "$FOLDER") # List only files larger than MINIMAL_FILE_SIZE. You can change the size of the files to be displayed
         chosen=$(printf "%s\n" "$list_files" | sed "s#${FOLDER}/##; s/\/\$//" | sort | rofi_launch "Select")
         if [ -n "$chosen" ]; then
             printf "%s\n" "${FOLDER}/${chosen}"
             "${MPV_CONTROL_SCRIPT}" -quit
-	    notification "${chosen}"
-            mpv --quiet --display-tags="Artist,Album,Title" --input-ipc-server="${MPV_SOCKET}" "${FOLDER}/${chosen}" &
+            notification "${chosen}"
+            if [ "$MPV_SOCKET_IN_CONFIG" = "true" ]; then
+                mpv --quiet --display-tags="Artist,Album,Title" "${FOLDER}/${chosen}" &
+            else
+                mpv --quiet --display-tags="Artist,Album,Title" --input-ipc-server="${MPV_SOCKET}" "${FOLDER}/${chosen}" &
+            fi
         else
             exit 0
         fi
     else
-        list_files=$(fd -t f -S +40M . "$FOLDER"; fd -t d . "$FOLDER") # List only files larger than 40M. You can change the size of the files to be displayed
+        list_files=$(fd -t f -S +"${MINIMAL_FILE_SIZE}" . "$FOLDER"; fd -t d . "$FOLDER") # List only files larger than MINIMAL_FILE_SIZE. You can change the size of the files to be displayed
         chosen=$(printf "%s\n" "$list_files" | sed "s#${FOLDER}/##; s/\/\$//" | sort | rofi_launch "Select")
         if [ -n "$chosen" ]; then
             "${MPV_CONTROL_SCRIPT}" -quit
             if pgrep -f "mpv --vid=no"; then
                 pkill -f "mpv --vid=no" && sleep 1
             fi
-	    notification "${chosen}"
-            mpv --vid=no --quiet --display-tags="Artist,Album,Title" --input-ipc-server="${MPV_SOCKET}" "${FOLDER}/${chosen}" &
+            notification "${chosen}"
+            if [ "$MPV_SOCKET_IN_CONFIG" = "true" ]; then
+                mpv --vid=no --quiet --display-tags="Artist,Album,Title" "${FOLDER}/${chosen}" &
+            else
+                mpv --vid=no --quiet --display-tags="Artist,Album,Title" --input-ipc-server="${MPV_SOCKET}" "${FOLDER}/${chosen}" &
+            fi
         else
             exit 0
         fi

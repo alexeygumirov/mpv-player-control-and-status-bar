@@ -37,6 +37,35 @@ https://github.com/user-attachments/assets/2a34301d-6788-4023-9d84-1d61ce3c1c7c
     Box Lofi,http://stream.zeno.fm/f3wvbbqmdg8uv
     ```
 
+## MPV player configuration and scripts variables
+
+You have a choice of how you want to configure the IPC socket for MPV player.
+The `MPV_SOCKET_IN_CONFIG` variable in my scripts is used to check if the socket is defined in the configuration file.
+
+### Setting IP Socket in `mpv.conf` file
+
+If you define it in the `~/.config/mpv/mpv.conf` file, like this:
+
+```plaintext
+input-ipc-server=/tmp/mpvsocket
+```
+
+Then you need to change set the variables in scripts to the following:
+
+```bash
+MPV_SOCKET="/tmp/mpv_socket"
+MPV_SOCKET_IN_CONFIG="true"
+```
+
+### If you don't use `mpv.conf` file
+
+If you don't want to define the socket in the configuration file, then you can set the variable in the scripts to the following:
+
+```bash
+MPV_SOCKET="/tmp/mpv_socket"
+MPV_SOCKET_IN_CONFIG="false"
+```
+
 ## Key bindings example (for Xmonad)
 
 I am using Xmoand tiling window manager. Here is part of my `xmonad.hs` configuration file with key bindings for the MPV player scripts.
