@@ -40,20 +40,20 @@ https://github.com/user-attachments/assets/2a34301d-6788-4023-9d84-1d61ce3c1c7c
 ## MPV player configuration and scripts variables
 
 You have a choice of how you want to configure the IPC socket for MPV player.
-The `MPV_SOCKET_IN_CONFIG` variable in my scripts is used to check if the socket is defined in the configuration file.
+The `MPV_SOCKET_IN_CONFIG` variable in my scripts is used to check if the socket is defined in the `mpv.conf`.
 
 ### Setting IP Socket in `mpv.conf` file
 
-If you define it in the `~/.config/mpv/mpv.conf` file, like this:
+In your `~/.config/mpv/mpv.conf` file:
 
 ```plaintext
-input-ipc-server=/tmp/mpvsocket
+input-ipc-server=/tmp/mpv_socket
 ```
 
-Then you need to change set the variables in scripts to the following:
+Then you need to set the variables in scripts to the following:
 
 ```bash
-MPV_SOCKET="/tmp/mpv_socket"
+MPV_SOCKET="/tmp/mpv_socket" # the same as in the mpv.conf file
 MPV_SOCKET_IN_CONFIG="true"
 ```
 
