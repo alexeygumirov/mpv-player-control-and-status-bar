@@ -1,3 +1,13 @@
+# 👋 THIS REPOSITORY HAS MOVED! 👋
+
+**This repository is no longer actively maintained on GitHub.**
+
+Please update your bookmarks and remotes to the new home on Codeberg:
+
+➡️ **[https://codeberg.org/alexeygumirov/mpv-player-control-and-status-bar](https://codeberg.org/alexeygumirov/mpv-player-control-and-status-bar)** ⬅️
+
+Thank you for your understanding!
+
 # MPV Player scripts for Tiling Window Manager and Status Bar
 
 Scrips for MPV player to be used with TWM and any status bar to play music, videos or Internet radio
